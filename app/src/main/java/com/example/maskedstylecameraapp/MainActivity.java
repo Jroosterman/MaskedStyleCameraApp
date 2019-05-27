@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private Uri picUri;
 
     /**
-     * When you create the activity, set up these values.
+     * When you create the activity, set up these values. Minor change.
      * @param savedInstanceState instance of the current state of the applicaiton.
      */
     @Override
