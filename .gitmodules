@@ -1,0 +1,6 @@
+[submodule "Mask_RCNN"]
+	path = Mask_RCNN
+	url = https://github.com/matterport/Mask_RCNN.git
+[submodule "a-neural-algorithm-of-artistic-style"]
+	path = a-neural-algorithm-of-artistic-style
+	url = https://github.com/Kautenja/a-neural-algorithm-of-artistic-style.git
