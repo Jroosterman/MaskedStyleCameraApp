@@ -10,8 +10,20 @@
         android:layout_height="wrap_content"
         android:text="Take a Photo"
         android:textStyle="bold"
-        android:layout_centerHorizontal="true"
         android:layout_alignParentBottom="true" />
+
+    <Button
+        android:id="@+id/btnSendPicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginRight="8dp"
+        android:layout_marginBottom="3dp"
+        android:text="Send Photo to Server"
+        android:textStyle="bold" />
     <ImageView
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

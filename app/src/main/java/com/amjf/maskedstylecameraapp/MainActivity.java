@@ -1,4 +1,4 @@
-package com.example.maskedstylecameraapp;
+package com.amjf.maskedstylecameraapp;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -12,6 +12,8 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.example.maskedstylecameraapp.R;
+
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -23,6 +25,7 @@ import java.util.Date;
 public class MainActivity extends AppCompatActivity {
     //Button on the activity_mail.xml
     private Button btnCapture;
+    private Button sendToServer;
 
     //Location to display resulting image.
     private ImageView imgCapture;
@@ -35,14 +38,19 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * When you create the activity, set up these values. Minor change.
+     *
      * @param savedInstanceState instance of the current state of the applicaiton.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        btnCapture =(Button)findViewById(R.id.btnTakePicture);
+        btnCapture = (Button) findViewById(R.id.btnTakePicture);
+        sendToServer = (Button) findViewById(R.id.btnSendPicture);
+        sendToServer.setEnabled(false);
+
         imgCapture = (ImageView) findViewById(R.id.capturedImage);
+
         //Set up the button action in classic java UI Way.
         btnCapture.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -50,13 +58,21 @@ public class MainActivity extends AppCompatActivity {
                 dispatchTakePictureIntent();
             }
         });
+        sendToServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                sendTakenPictureIntent();
+            }
+        });
+
     }
 
     /**
      * Action happens when you finish an activity.
+     *
      * @param requestCode Request code of the activity.
-     * @param resultCode result of the activity.
-     * @param data data associated with the activity.
+     * @param resultCode  result of the activity.
+     * @param data        data associated with the activity.
      */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -65,6 +81,7 @@ public class MainActivity extends AppCompatActivity {
             // If the result was successful.
             if (resultCode == RESULT_OK) {
                 imgCapture.setImageURI(picUri);
+                sendToServer.setEnabled(true);
             }
             // If the result was unsuccessful.
             else if (resultCode == RESULT_CANCELED) {
@@ -77,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
      * Handles the action of setting up the camera to take a picture.
      */
     private void dispatchTakePictureIntent() {
+        //We are taking a new picture so disable the other button.
+        sendToServer.setEnabled(false);
+
         // Creates the image capture intent.
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
@@ -121,5 +141,15 @@ public class MainActivity extends AppCompatActivity {
         );
 
         return image;
+    }
+
+
+    /**
+     * Send the picture we currently have taken to the server and handle the next few steps.
+     */
+    private void sendTakenPictureIntent() {
+        Intent intent = new Intent(this, sendToServerActivity.class);
+        intent.putExtra("image",  picUri.toString());
+        startActivity(intent);
     }
 }
