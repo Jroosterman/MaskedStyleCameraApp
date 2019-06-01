@@ -22,7 +22,7 @@ async def handleImageMaskNStyle(websocket, path):
     name = await websocket.recv()
     print(f"< {name}")
 
-    #await websocket.send("SUP")
+    await websocket.send("SUP")
 
 start_server = websockets.serve(handleImageMaskNStyle, 'localhost', 8765)
 print("START SERVER")

@@ -8,5 +8,12 @@
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:id="@+id/capturedImage"
-        android:layout_above="@+id/btnTakePicture"/>
+        android:layout_above="@+id/Retry"/>
+    <Button
+        android:id="@+id/Retry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Again"
+        android:textStyle="bold"
+        android:layout_alignParentBottom="true" />
 </RelativeLayout>
