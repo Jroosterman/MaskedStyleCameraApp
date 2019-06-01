@@ -65,8 +65,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 #file_names = next(os.walk(IMAGE_DIR))[2]
 #image = skimage.io.imread(os.path.join(IMAGE_DIR, random.choice(file_names)))
 
-def evaluate_image(filepath):
-    image = skimage.io.imread(filepath)
+def evaluate_image(image):
     # Run detection
     results = model.detect([image], verbose=1)
     
@@ -74,12 +73,14 @@ def evaluate_image(filepath):
     #r = results[0]
     #visualize.display_instances(image, r['rois'], r['masks'], r['class_ids'], 
     #                            class_names, r['scores'])
-    formatted_results = {'rois': results[0]['rois'].tolist(), 
-                         'masks': results[0]['masks'].tolist(), 
-                         'class_ids': results[0]['class_ids'].tolist(), 
-                         'class_names': class_names, 
-                         'scores': results[0]['scores'].tolist()}
-    return json.dumps(formatted_results)
+    #formatted_results = {'rois': results[0]['rois'].tolist(), 
+    #                     'masks': results[0]['masks'].tolist(), 
+    #                     'class_ids': results[0]['class_ids'].tolist(), 
+    #                     'class_names': class_names, 
+    #                     'scores': results[0]['scores'].tolist()}
+    #return json.dumps(formatted_results)
+    return results
 
-if __name__ == "__main__":
-    print(evaluate_image("Mask_RCNN/images/8734543718_37f6b8bd45_z.jpg"))
+#if __name__ == "__main__":
+#    image = skimage.io.imread("Mask_RCNN/images/8734543718_37f6b8bd45_z.jpg")
+#    print(evaluate_image(image))
