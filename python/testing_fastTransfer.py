@@ -5,7 +5,7 @@ import skimage.io
 import json
 import numpy as np
 
-ROOT_DIR = os.path.abspath("./fast-style-transfer/src")
+ROOT_DIR = os.path.abspath("../fast-style-transfer/src")
 sys.path.append(ROOT_DIR)
 import transform
 
