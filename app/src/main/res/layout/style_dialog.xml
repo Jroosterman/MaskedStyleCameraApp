@@ -1,0 +1,85 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+
+    android:layout_height="fill_parent"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/la_muse"
+            android:layout_width="136dp"
+            android:layout_height="136dp"
+            android:src="@drawable/la_muse" />
+
+        <Button
+            android:id="@+id/chooseMuse"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
+            android:layout_marginTop="20pt"
+            android:layout_toRightOf="@id/la_muse"
+            android:text="Choose The La Muse" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/seatedNude"
+            android:layout_width="136dp"
+            android:layout_height="136dp"
+            android:src="@drawable/seatednude" />
+
+        <Button
+            android:id="@+id/chooseSeated"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
+            android:layout_marginTop="20pt"
+            android:layout_toRightOf="@id/seatedNude"
+            android:text="Choose The Seated Nude" />
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/wave"
+            android:layout_width="136dp"
+            android:layout_height="136dp"
+            android:src="@drawable/wave" />
+
+        <Button
+            android:id="@+id/chooseWave"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
+            android:layout_marginTop="20pt"
+            android:layout_toRightOf="@id/wave"
+            android:text="Choose The Wave" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:id="@+id/pc"
+            android:layout_width="136dp"
+            android:layout_height="136dp"
+            android:src="@drawable/pc" />
+
+        <Button
+            android:id="@+id/choosePc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="45dp"
+            android:layout_marginTop="20pt"
+            android:layout_toRightOf="@id/pc"
+            android:text="Choose The uh... Cartoon" />
+    </RelativeLayout>
+</LinearLayout>

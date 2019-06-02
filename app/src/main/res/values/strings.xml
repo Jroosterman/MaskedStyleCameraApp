@@ -3,4 +3,5 @@
     <string name="maskDialog">Choose Masks based on Picture.</string>
     <string name="ok">ok</string>
     <string name="cancel">cancel</string>
+    <string name="styleDialog">Choose Your Style!</string>
 </resources>

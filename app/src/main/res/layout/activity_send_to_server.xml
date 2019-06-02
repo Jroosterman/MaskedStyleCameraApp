@@ -5,7 +5,6 @@
     android:paddingLeft="10dp"
     android:paddingRight="10dp">
 
-
     <TextView
         android:layout_width="match_parent"
         android:layout_height="200px"
@@ -33,6 +32,16 @@
         android:text="Send Again"
         android:textStyle="bold"
         android:layout_alignParentBottom="true" />
+
+    <Button
+        android:id="@+id/chooseStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="Choose Style"
+        android:textStyle="bold" />
 
     <Button
         android:id="@+id/ChooseMask"

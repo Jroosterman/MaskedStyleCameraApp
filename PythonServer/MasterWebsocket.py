@@ -69,6 +69,23 @@ async def handleMask(websocket):
         maskList+="," + mask_results['class_names'][i]
     print("Sending List of Masks")
     await websocket.send(maskList)
+
+    masks = await websocket.recv()
+    chosen = []
+    #First element is called 'chosen_masks' for the sake of IDing the message
+    for i in masks.split(',')[1:]:
+        chosen.append(mask_results['class_names'].index(i))
+    
+    #Send a response so the app knows to move onto the next section.
+    await websocket.send('mask_received')
+    print("maskReceived")
+
+    styles = await websocket.recv()
+    style = styles.split(',')[1]
+
+    print(style)
+
+
     #while name != "end":
     #     name = await websocket.recv()
     #     if name != "end":

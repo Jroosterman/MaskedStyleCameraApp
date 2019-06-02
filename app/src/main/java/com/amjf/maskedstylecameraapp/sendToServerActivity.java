@@ -5,11 +5,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Base64;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -29,10 +30,11 @@ import java.net.URISyntaxException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
-
+/**
+ * Activity that handles the heart of the application and sends messages to and from the web server.
+ */
 public class sendToServerActivity extends AppCompatActivity {
 
     // Local values
@@ -48,6 +50,7 @@ public class sendToServerActivity extends AppCompatActivity {
     private ProgressBar spinner;
     private ImageView imageView;
     private Button chooseMask;
+    private Button chooseStyle;
 
     // These are to hardcoded to quickly get this working.  Not Planned for production.
     String address = "ws://10.0.2.2:8765";
@@ -64,6 +67,8 @@ public class sendToServerActivity extends AppCompatActivity {
         imageView = (ImageView) findViewById(R.id.capturedImage);
         chooseMask = (Button) findViewById(R.id.ChooseMask);
         chooseMask.setEnabled(false);
+        chooseStyle = (Button) findViewById(R.id.chooseStyle);
+        chooseStyle.setEnabled(false);
 
 
         //Get the current photo uri from Main Activity.
@@ -90,6 +95,13 @@ public class sendToServerActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 maskDialog();
+            }
+        });
+
+        chooseStyle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                createStyleDialog();
             }
         });
 
@@ -152,12 +164,6 @@ public class sendToServerActivity extends AppCompatActivity {
 
             return;
         }
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                sendAgain.setEnabled(true);
-            }
-        });
     }
 
     /**
@@ -206,18 +212,97 @@ public class sendToServerActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the selectedItems results somewhere
                         // or return them to the component that opened the dialog
-
+                        sendMasks();
                     }
                 })
                 .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
-
                     }
                 });
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    /**
+     * Make a dialog for picking style.
+     * Note that this is pretty rough but we are running out of time here.
+     */
+    private void createStyleDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        // Get the layout inflater
+        LayoutInflater inflater = this.getLayoutInflater();
+
+        // Inflate and set the layout for the dialog
+        // Pass null as the parent view because its going in the dialog layout
+        builder.setView(inflater.inflate(R.layout.style_dialog, null));
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        Button chooseMuse = (Button) dialog.findViewById(R.id.chooseMuse);
+        Button chooseSeated = (Button) dialog.findViewById(R.id.chooseSeated);
+        Button chooseWave = (Button) dialog.findViewById(R.id.chooseWave);
+        Button choosePC = (Button) dialog.findViewById(R.id.choosePc);
+
+        chooseMuse.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenStyle(dialog, "muse");
+            }
+        });
+        chooseSeated.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenStyle(dialog, "seated");
+            }
+        });
+        chooseWave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenStyle(dialog, "wave");
+            }
+        });
+        choosePC.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                chosenStyle(dialog, "pc");
+            }
+        });
+
+
+    }
+
+    /**
+     * Choose the style we want to use.
+     * @param dialog Dialog to close.
+     * @param type type of style we want to use.
+     */
+    private void chosenStyle(AlertDialog dialog, String type) {
+        final AlertDialog d = dialog;
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                d.dismiss();
+                chooseStyle.setEnabled(false);
+                imageView.setImageDrawable(null);
+            }
+        });
+        String message = "style_type," + type;
+        socket.send(message);
+    }
+
+
+
+    /**
+     * Handle the action where we send masks and on success we Activate the next button.
+     */
+    private void sendMasks() {
+        String message = "chosen_masks";
+        for (Integer i : chosenMasks) {
+            message += "," + masks[i];
+        }
+
+        socket.send(message);
     }
 
     /**
@@ -252,6 +337,7 @@ public class sendToServerActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             spinner.setEnabled(false);
+                            sendAgain.setEnabled(false);
                             chooseMask.setEnabled(true);
                             imageView.setImageBitmap(decodedByte);
                         }
@@ -263,6 +349,17 @@ public class sendToServerActivity extends AppCompatActivity {
                     String[] msks = message.split(",");
                     msks[0] = "BG";
                     masks = msks;
+                } else if (message.equals("mask_received")) {
+                    // Update the UI when we know the masks have been received.
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            chooseMask.setEnabled(false);
+                            chooseStyle.setEnabled(true);
+                        }
+                    });
+
+
                 }
             }
 
