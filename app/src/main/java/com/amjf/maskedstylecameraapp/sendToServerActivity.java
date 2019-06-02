@@ -362,7 +362,7 @@ public class sendToServerActivity extends AppCompatActivity {
                     inImage = false;
                 } else if (message.contains("mask_list")) {
                     String[] msks = message.split(",");
-                    Arrays.copyOfRange(msks, 1, msks.length);
+                    msks = Arrays.copyOfRange(msks, 1, msks.length);
                     masks = msks;
                 } else if (message.equals("mask_received")) {
                     // Update the UI when we know the masks have been received.

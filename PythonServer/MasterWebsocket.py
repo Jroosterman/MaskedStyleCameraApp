@@ -74,16 +74,18 @@ async def handleMask(websocket):
     print("FinishedSendingImage")
     
     maskList = "mask_list"
-    for i in mask_results['class_ids']:
-        maskList+="," + mask_results['class_names'][i]
+    for i in range(len(mask_results['class_ids'])):
+        id = mask_results['class_ids'][i]
+        maskList+="," + mask_results['class_names'][id] + ":" + str(i)
     print("Sending List of Masks")
     await websocket.send(maskList)
 
     masks = await websocket.recv()
     chosen = []
+    print (mask_results['class_ids'])
     #First element is called 'chosen_masks' for the sake of IDing the message
     for i in masks.split(',')[1:]:
-        chosen.append(mask_results['class_names'].index(i))
+        chosen.append(int(i.split(':')[-1]))
     
     #Send a response so the app knows to move onto the next section.
     await websocket.send('mask_received')
@@ -94,7 +96,7 @@ async def handleMask(websocket):
 
     final_mask = np.zeros([mask_results['masks'].shape[0], mask_results['masks'].shape[1]])
     for i in chosen:
-        final_mask |= mask_results['masks'][:,:,mask_results['class_ids'].index(i)]
+        final_mask |= mask_results['masks'][:,:,i]
 
     print(style)
     stylized = mask_transfer(image, 1 - final_mask, convert_filepath(style))
