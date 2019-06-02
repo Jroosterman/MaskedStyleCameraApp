@@ -40,6 +40,15 @@ async def handleImageMaskNStyle(websocket, path):
         print("loading image")
         await handleMask(websocket)
 
+def convert_filepath(style):
+    if style == "muse":
+        return "../fast-style-transfer/la-muse"
+    if style == "seated":
+        return "../fast-style-transfer/seated-nude"
+    if style == "wave":
+        return "../fast-style-transfer/wave"
+    return None
+
 async def handleMask(websocket):
     name = ""
     file = []
@@ -58,8 +67,8 @@ async def handleMask(websocket):
         masked_image = masks.read()
         await websocket.send("mask")
         i = 0
-        for i in range(100000, len(masked_image), 100000):
-            await websocket.send(bytes(masked_image[(i-100000):i]))
+        for i in range(1000000, len(masked_image), 1000000):
+            await websocket.send(bytes(masked_image[(i-1000000):i]))
         await websocket.send(bytes(masked_image[i:]))
         await websocket.send("endMaskList")
     print("FinishedSendingImage")
@@ -83,8 +92,23 @@ async def handleMask(websocket):
     styles = await websocket.recv()
     style = styles.split(',')[1]
 
-    print(style)
+    final_mask = np.zeros(mask_results['masks'].shape[0], mask_results['masks'].shape[1])
+    for i in chosen:
+        final_mask |= mask_results['masks'][:,:,i]
 
+    print(style)
+    stylized = mask_transfer(image, 1 - final_mask, convert_filepath(style))
+
+    save_img("output.jpg", stylized)
+
+    await websocket.send('styleStart')
+    while open("output.jpg", mode='rb') as output_file:
+        output = output_file.read()
+        i = 0
+        for i in range(1000000, len(output), 1000000):
+            await websocket.send(bytes(output[(i-1000000):i]))
+        await websocket.send(bytes(masked_image[i:]))
+        await websocket.send('endStyle')
 
     #while name != "end":
     #     name = await websocket.recv()
