@@ -94,7 +94,7 @@ async def handleMask(websocket):
 
     final_mask = np.zeros([mask_results['masks'].shape[0], mask_results['masks'].shape[1]])
     for i in chosen:
-        final_mask |= mask_results['masks'][:,:,i]
+        final_mask |= mask_results['masks'][:,:,mask_results['class_ids'].index(i)]
 
     print(style)
     stylized = mask_transfer(image, 1 - final_mask, convert_filepath(style))
