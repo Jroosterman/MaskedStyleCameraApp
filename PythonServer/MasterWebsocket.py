@@ -41,12 +41,15 @@ async def handleImageMaskNStyle(websocket, path):
         await handleMask(websocket)
 
 def convert_filepath(style):
+    print(style)
     if style == "muse":
         return "../fast-style-transfer/la-muse"
     if style == "seated":
         return "../fast-style-transfer/seated-nude"
     if style == "wave":
         return "../fast-style-transfer/wave"
+    if style == "pc":
+        return "../fast-style-transfer/cartoon"
     return None
 
 async def handleMask(websocket):
@@ -96,7 +99,8 @@ async def handleMask(websocket):
 
     final_mask = np.zeros([mask_results['masks'].shape[0], mask_results['masks'].shape[1]])
     for i in chosen:
-        final_mask |= mask_results['masks'][:,:,i]
+        print(i)
+        final_mask = (final_mask + mask_results['masks'][:,:,i]) > 0
 
     print(style)
     stylized = mask_transfer(image, 1 - final_mask, convert_filepath(style))
@@ -109,7 +113,7 @@ async def handleMask(websocket):
         i = 0
         for i in range(1000000, len(output), 1000000):
             await websocket.send(bytes(output[(i-1000000):i]))
-        await websocket.send(bytes(masked_image[i:]))
+        await websocket.send(bytes(output[i:]))
         await websocket.send('endStyle')
 
     #while name != "end":
@@ -128,7 +132,7 @@ async def handleMask(websocket):
     #        await websocket.send("finished!")
     
 
-start_server = websockets.serve(handleImageMaskNStyle, 'localhost', 8765)
+start_server = websockets.serve(handleImageMaskNStyle, '10.0.0.33', 8765)
 print("START SERVER")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
