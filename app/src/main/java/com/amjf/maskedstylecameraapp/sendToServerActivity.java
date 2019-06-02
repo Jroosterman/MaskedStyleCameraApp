@@ -329,6 +329,9 @@ public class sendToServerActivity extends AppCompatActivity {
                 if (message.equals("mask")) {
                     inImage = true;
                     dataStream = new ByteArrayOutputStream();
+                } else if (message.equals("styleStart")) {
+                    inImage = true;
+                    dataStream = new ByteArrayOutputStream();
                 } else if ("endMaskList".equals(message)) {
                     byte[] img = dataStream.toByteArray();
                     final Bitmap decodedByte = BitmapFactory.decodeByteArray(img, 0, img.length);
@@ -345,9 +348,21 @@ public class sendToServerActivity extends AppCompatActivity {
                     inImage = false;
 
                     // process image
+                } else if ("endStyle".equals(message)) {
+                    byte[] img = dataStream.toByteArray();
+                    final Bitmap decodedByte = BitmapFactory.decodeByteArray(img, 0, img.length);
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            spinner.setEnabled(false);
+                            imageView.setImageBitmap(decodedByte);
+                        }
+                    });
+                    inImage = false;
                 } else if (message.contains("mask_list")) {
                     String[] msks = message.split(",");
-                    msks[0] = "BG";
+                    Arrays.copyOfRange(msks, 1, msks.length);
                     masks = msks;
                 } else if (message.equals("mask_received")) {
                     // Update the UI when we know the masks have been received.
@@ -358,8 +373,6 @@ public class sendToServerActivity extends AppCompatActivity {
                             chooseStyle.setEnabled(true);
                         }
                     });
-
-
                 }
             }
 
