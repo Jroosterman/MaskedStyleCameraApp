@@ -1,14 +1,19 @@
 package com.amjf.maskedstylecameraapp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 
 import com.example.maskedstylecameraapp.R;
 
@@ -21,6 +26,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
@@ -28,15 +35,22 @@ import java.util.List;
 
 public class sendToServerActivity extends AppCompatActivity {
 
+    // Local values
     private Uri storedPhoto;
     private WebSocketClient socket;
-    private Button sendAgain;
-    private String data;
+    private ByteArrayOutputStream dataStream;
     private boolean inImage;
+    private String[] masks;
+    private List<Integer> chosenMasks;
 
+    // UI Elements
+    private Button sendAgain;
+    private ProgressBar spinner;
     private ImageView imageView;
+    private Button chooseMask;
+
     // These are to hardcoded to quickly get this working.  Not Planned for production.
-    String address = "ws://10.0.0.33:8765";
+    String address = "ws://10.0.2.2:8765";
 
 
     @Override
@@ -44,10 +58,13 @@ public class sendToServerActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_to_server);
 
+        spinner = (ProgressBar) findViewById(R.id.progress_loader);
         sendAgain = (Button) findViewById(R.id.Retry);
         sendAgain.setEnabled(false);
-
         imageView = (ImageView) findViewById(R.id.capturedImage);
+        chooseMask = (Button) findViewById(R.id.ChooseMask);
+        chooseMask.setEnabled(false);
+
 
         //Get the current photo uri from Main Activity.
         Intent intent = getIntent();
@@ -57,8 +74,22 @@ public class sendToServerActivity extends AppCompatActivity {
         sendAgain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendAgain.setEnabled(false);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        spinner.setEnabled(true);
+                        sendAgain.setEnabled(false);
+                        imageView.setImageDrawable(null);
+                    }
+                });
                 makeConnections();
+            }
+        });
+
+        chooseMask.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                maskDialog();
             }
         });
 
@@ -66,18 +97,18 @@ public class sendToServerActivity extends AppCompatActivity {
 
     /**
      * Handles all of the steps needed to connect to the server
-     *  In order to get this to work in a resonalble amount of time, we decied to use a server
-     *  to process the Networks.  The list of reasonings and other options can be found in our report
-     *  The flow of the network should go as follows.
-     *      * 1. Connect to the server and send the image.
-     *      * 2. After some time receive a new image.
-     *      * 3. Send a response back to the server to say that you got the image.
-     *      * 4. Receive a list of mask names. (CSV)
-     *      * 5. send a list of mask names (CSV)
-     *      * 6. Receive a response from the Server.
-     *      * 7. Send the chosen style name
-     *      * 8. After some time receive the resulting image from the server.
-     *      * 9. Close the connection.  Save the image.
+     * In order to get this to work in a resonalble amount of time, we decied to use a server
+     * to process the Networks.  The list of reasonings and other options can be found in our report
+     * The flow of the network should go as follows.
+     * * 1. Connect to the server and send the image.
+     * * 2. After some time receive a new image.
+     * * 3. Send a response back to the server to say that you got the image.
+     * * 4. Receive a list of mask names. (CSV)
+     * * 5. send a list of mask names (CSV)
+     * * 6. Receive a response from the Server.
+     * * 7. Send the chosen style name
+     * * 8. After some time receive the resulting image from the server.
+     * * 9. Close the connection.  Save the image.
      */
     private void makeConnections() {
         connectWebSocket();
@@ -103,8 +134,7 @@ public class sendToServerActivity extends AppCompatActivity {
             socket.send("image");
             int i = 0;
             System.out.println(inputData[10]);
-            for (; (i + 1000000) < inputData.length; i += 1000000)
-            {
+            for (; (i + 1000000) < inputData.length; i += 1000000) {
                 socket.send(Arrays.copyOfRange(inputData, i, i + 1000000));
             }
             socket.send(Arrays.copyOfRange(inputData, i, inputData.length));
@@ -113,15 +143,26 @@ public class sendToServerActivity extends AppCompatActivity {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             alertWithMessage("Failed to send initial image");
-            sendAgain.setEnabled(true);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    sendAgain.setEnabled(true);
+                }
+            });
+
             return;
         }
-        sendAgain.setEnabled(true);
-
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                sendAgain.setEnabled(true);
+            }
+        });
     }
 
     /**
      * When a failure occurs, we alert the user with a message.
+     *
      * @param message
      */
     private void alertWithMessage(String message) {
@@ -135,10 +176,52 @@ public class sendToServerActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Create the dialog for looking at your list of masks and display it to the screen.
+     */
+    private void maskDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        chosenMasks = new ArrayList<Integer>();
+        // Set the dialog title
+        builder.setTitle(R.string.maskDialog)
+                // Specify the list array, the items to be selected by default (null for none),
+                // and the listener through which to receive callbacks when items are selected
+                .setMultiChoiceItems(masks, null,
+                        new DialogInterface.OnMultiChoiceClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which,
+                                                boolean isChecked) {
+                                if (isChecked) {
+                                    // If the user checked the item, add it to the selected items
+                                    chosenMasks.add(which);
+                                } else if (chosenMasks.contains(which)) {
+                                    // Else, if the item is already in the array, remove it
+                                    chosenMasks.remove(Integer.valueOf(which));
+                                }
+                            }
+                        })
+                // Set the action buttons
+                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User clicked OK, so save the selectedItems results somewhere
+                        // or return them to the component that opened the dialog
 
+                    }
+                })
+                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int id) {
+
+                    }
+                });
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
 
     /**
-     *Web socket logic.  How web sockets are handled.
+     * Web socket logic.  How web sockets are handled.
      */
     private void connectWebSocket() {
         URI uri;
@@ -158,27 +241,39 @@ public class sendToServerActivity extends AppCompatActivity {
             @Override
             public void onMessage(String s) {
                 final String message = s;
-                if (message.equals("mask"))
-                {
+                if (message.equals("mask")) {
                     inImage = true;
-                    data = "";
-                } else if ("end".equals(message))
-                {
-                    Uri uri = Uri.parse(data);
-                    imageView.setImageURI(uri);
+                    dataStream = new ByteArrayOutputStream();
+                } else if ("endMaskList".equals(message)) {
+                    byte[] img = dataStream.toByteArray();
+                    final Bitmap decodedByte = BitmapFactory.decodeByteArray(img, 0, img.length);
+
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            System.out.println(inImage);
+                            spinner.setEnabled(false);
+                            chooseMask.setEnabled(true);
+                            imageView.setImageBitmap(decodedByte);
                         }
                     });
                     inImage = false;
-                    // process image
-                } else if (inImage == true)
-                {
-                    final String noslash = message.replaceAll("\\\\", "");
-                    data += message.substring(2);
 
+                    // process image
+                } else if (message.contains("mask_list")) {
+                    String[] msks = message.split(",");
+                    msks[0] = "BG";
+                    masks = msks;
+                }
+            }
+
+            @Override
+            public void onMessage(ByteBuffer buffer) {
+                if (inImage == true) {
+                    try {
+                        dataStream.write(buffer.array());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
 
@@ -214,5 +309,3 @@ public class sendToServerActivity extends AppCompatActivity {
         return byteBuffer.toByteArray();
     }
 }
-
-

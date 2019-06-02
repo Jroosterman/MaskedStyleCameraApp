@@ -53,14 +53,22 @@ async def handleMask(websocket):
     image = skimage.io.imread(bfile, plugin='imageio')
     mask_results = evaluate_image(image)[0]
     display_instances(image, mask_results['rois'], mask_results['masks'], mask_results['class_ids'], mask_results['class_names'], mask_results['scores']) 
+    print("sending ImageBack")
     with open("masked.png", mode='rb') as masks:
         masked_image = masks.read()
         await websocket.send("mask")
         i = 0
         for i in range(100000, len(masked_image), 100000):
-            await websocket.send(str(bytes(masked_image[(i-100000):i])))
-        await websocket.send(str(bytes(masked_image[i:])))
-        await websocket.send("end")
+            await websocket.send(bytes(masked_image[(i-100000):i]))
+        await websocket.send(bytes(masked_image[i:]))
+        await websocket.send("endMaskList")
+    print("FinishedSendingImage")
+    
+    maskList = "mask_list"
+    for i in mask_results['class_ids']:
+        maskList+="," + mask_results['class_names'][i]
+    print("Sending List of Masks")
+    await websocket.send(maskList)
     #while name != "end":
     #     name = await websocket.recv()
     #     if name != "end":
@@ -77,7 +85,7 @@ async def handleMask(websocket):
     #        await websocket.send("finished!")
     
 
-start_server = websockets.serve(handleImageMaskNStyle, '10.0.0.33', 8765)
+start_server = websockets.serve(handleImageMaskNStyle, 'localhost', 8765)
 print("START SERVER")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
