@@ -92,7 +92,7 @@ async def handleMask(websocket):
     styles = await websocket.recv()
     style = styles.split(',')[1]
 
-    final_mask = np.zeros(mask_results['masks'].shape[0], mask_results['masks'].shape[1])
+    final_mask = np.zeros([mask_results['masks'].shape[0], mask_results['masks'].shape[1]])
     for i in chosen:
         final_mask |= mask_results['masks'][:,:,i]
 
@@ -102,7 +102,7 @@ async def handleMask(websocket):
     save_img("output.jpg", stylized)
 
     await websocket.send('styleStart')
-    while open("output.jpg", mode='rb') as output_file:
+    with open("output.jpg", mode='rb') as output_file:
         output = output_file.read()
         i = 0
         for i in range(1000000, len(output), 1000000):
