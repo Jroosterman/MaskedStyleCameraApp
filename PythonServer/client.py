@@ -7,7 +7,7 @@ import websockets
 
 async def hello():
     async with websockets.connect(
-            'ws://localhost:8765') as websocket:
+            'ws://10.0.0.33:8765') as websocket:
         
         name = "francis"
         await websocket.send(name)

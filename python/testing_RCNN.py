@@ -68,6 +68,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 def evaluate_image(image):
     # Run detection
     results = model.detect([image], verbose=1)
+    results[0]['class_names'] = class_names
     
     # Visualize results
     #r = results[0]

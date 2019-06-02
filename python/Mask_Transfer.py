@@ -24,7 +24,7 @@ def test():
     image = skimage.io.imread("../Mask_RCNN/images/3862500489_6fd195d183_z.jpg")
     results = evaluate_image(image)
     mask = 1 - results[0]['masks'][:,:, 0]
-    transfered = mask_transfer(image, mask, "../fast-style-transfer/la-muse")
+    transfered = mask_transfer(image, mask, "../fast-style-transfer/wave")
     return transfered
 
 if __name__ == "__main__":

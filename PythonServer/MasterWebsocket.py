@@ -4,6 +4,22 @@
 
 import asyncio
 import websockets
+import numpy as np
+import io
+import skimage.io
+import binascii
+import os
+import sys
+import json
+
+ROOT_DIR = os.path.abspath("../python/")
+
+sys.path.append(ROOT_DIR)
+from testing_RCNN import evaluate_image
+from Mask_Transfer import mask_transfer
+from testing_fastTransfer import create_transfer
+from utils import save_img
+from Display_Mask import display_instances
 
 '''
     This function handles the interactions for the websocket between the android app and our various CNNs we use to modify the picture.
@@ -20,11 +36,48 @@ import websockets
 async def handleImageMaskNStyle(websocket, path):
     print("AWAITING")
     name = await websocket.recv()
-    print(f"< {name}")
+    if name == "image":
+        print("loading image")
+        await handleMask(websocket)
 
-    await websocket.send("SUP")
+async def handleMask(websocket):
+    name = ""
+    file = []
+    while name != "end":
+        name = await websocket.recv()
+        if name != "end":
+            print("got a packet!")
+            file.extend(name)
+    print("image acquired")
+    bfile = bytes(file)
+    image = skimage.io.imread(bfile, plugin='imageio')
+    mask_results = evaluate_image(image)[0]
+    display_instances(image, mask_results['rois'], mask_results['masks'], mask_results['class_ids'], mask_results['class_names'], mask_results['scores']) 
+    with open("masked.png", mode='rb') as masks:
+        masked_image = masks.read()
+        await websocket.send("mask")
+        i = 0
+        for i in range(100000, len(masked_image), 100000):
+            await websocket.send(str(bytes(masked_image[(i-100000):i])))
+        await websocket.send(str(bytes(masked_image[i:])))
+        await websocket.send("end")
+    #while name != "end":
+    #     name = await websocket.recv()
+    #     if name != "end":
+    #      file.extend(name)
+    #        print("image acquired")
+    #        bfile = bytes(file)
+    #        image = skimage.io.imread(bfile, plugin='imageio')
+    #        mask_results = evaluate_image(image)[0]
+            
+    #        save_img("output.jpg", mask_transfer(image, 1 - mask_results['masks'][:,:,0], "../fast-style-transfer/la-muse"))
+    #        print("image saved")
+    #        with open("output.jpg", mode='rb') as finished:
+    #            result = finished.read()
+    #        await websocket.send("finished!")
+    
 
-start_server = websockets.serve(handleImageMaskNStyle, 'localhost', 8765)
+start_server = websockets.serve(handleImageMaskNStyle, '10.0.0.33', 8765)
 print("START SERVER")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()

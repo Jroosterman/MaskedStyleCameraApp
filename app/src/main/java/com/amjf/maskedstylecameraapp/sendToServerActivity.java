@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import com.example.maskedstylecameraapp.R;
 
@@ -20,6 +21,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
 
 
 public class sendToServerActivity extends AppCompatActivity {
@@ -27,9 +31,12 @@ public class sendToServerActivity extends AppCompatActivity {
     private Uri storedPhoto;
     private WebSocketClient socket;
     private Button sendAgain;
+    private String data;
+    private boolean inImage;
 
+    private ImageView imageView;
     // These are to hardcoded to quickly get this working.  Not Planned for production.
-    String address = "ws://10.246.251.255:8765";
+    String address = "ws://10.0.0.33:8765";
 
 
     @Override
@@ -39,6 +46,8 @@ public class sendToServerActivity extends AppCompatActivity {
 
         sendAgain = (Button) findViewById(R.id.Retry);
         sendAgain.setEnabled(false);
+
+        imageView = (ImageView) findViewById(R.id.capturedImage);
 
         //Get the current photo uri from Main Activity.
         Intent intent = getIntent();
@@ -91,7 +100,16 @@ public class sendToServerActivity extends AppCompatActivity {
             Log.w("EXCEPTION", e.getMessage());
         }
         try {
-            socket.send(inputData);
+            socket.send("image");
+            int i = 0;
+            System.out.println(inputData[10]);
+            for (; (i + 1000000) < inputData.length; i += 1000000)
+            {
+                socket.send(Arrays.copyOfRange(inputData, i, i + 1000000));
+            }
+            socket.send(Arrays.copyOfRange(inputData, i, inputData.length));
+            socket.send("end");
+
         } catch (Exception e) {
             System.out.println(e.getMessage());
             alertWithMessage("Failed to send initial image");
@@ -140,13 +158,28 @@ public class sendToServerActivity extends AppCompatActivity {
             @Override
             public void onMessage(String s) {
                 final String message = s;
+                if (message.equals("mask"))
+                {
+                    inImage = true;
+                    data = "";
+                } else if ("end".equals(message))
+                {
+                    Uri uri = Uri.parse(data);
+                    imageView.setImageURI(uri);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            System.out.println(inImage);
+                        }
+                    });
+                    inImage = false;
+                    // process image
+                } else if (inImage == true)
+                {
+                    final String noslash = message.replaceAll("\\\\", "");
+                    data += message.substring(2);
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        System.out.println(message);
-                    }
-                });
+                }
             }
 
             @Override
