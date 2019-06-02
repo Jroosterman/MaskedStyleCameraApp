@@ -52,7 +52,7 @@ public class sendToServerActivity extends AppCompatActivity {
     private Button chooseStyle;
 
     // These are to hardcoded to quickly get this working.  Not Planned for production.
-    String address = "ws://10.0.2.2:8765";
+    String address = "ws://10.0.0.33:8765";
 
 
     @Override
