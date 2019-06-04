@@ -11,6 +11,8 @@
 /build
 /captures
 /__pycache__
-/fast-style-transfer/data/train2014
-/fast-style-transfer/data/train2014.zip
 .externalNativeBuild
+/fast-style-transfer/la-muse
+/fast-style-transfer/wave
+/fast-style-transfer/seated-nude
+/fast-style-transfer/cartoon

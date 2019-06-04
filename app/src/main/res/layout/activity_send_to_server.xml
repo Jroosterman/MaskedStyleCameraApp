@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="200px"
+        android:gravity="center"
+        android:text="processing.  PROCESSING!!!"
+        android:textSize="10pt"
+        android:layout_below="@id/progress_loader"
+        />
+    <ProgressBar
+        android:id="@+id/progress_loader"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="128dp"
+        android:layout_height="118dp"
+        android:layout_centerInParent="true"
+        android:visibility="visible"/>
+    <ImageView
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/capturedImage"
+        android:layout_above="@+id/Retry"/>
+    <Button
+        android:id="@+id/Retry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Send Again"
+        android:textStyle="bold"
+        android:layout_alignParentBottom="true" />
+
+    <Button
+        android:id="@+id/chooseStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:text="Choose Style"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/ChooseMask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:text="Choose Masks"
+        android:textStyle="bold" />
+
+</RelativeLayout>

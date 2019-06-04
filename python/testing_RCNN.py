@@ -5,7 +5,7 @@ import skimage.io
 import json
 
 # Root directory of the project
-ROOT_DIR = os.path.abspath("./Mask_RCNN/")
+ROOT_DIR = os.path.abspath("../Mask_RCNN/")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
@@ -68,6 +68,7 @@ class_names = ['BG', 'person', 'bicycle', 'car', 'motorcycle', 'airplane',
 def evaluate_image(image):
     # Run detection
     results = model.detect([image], verbose=1)
+    results[0]['class_names'] = class_names
     
     # Visualize results
     #r = results[0]
