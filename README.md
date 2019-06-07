@@ -14,8 +14,9 @@ Running the Android app:
 
 Running the Server:
 1. Download tensor flow
-2. In the folder PythonServer you will want to run MasterWebsocket.py
-3. They may be dependencies you don't have so download them with pip install and keep trying until you have all of them.
+2. In PythonServer run "pip3 install -r requirements.txt". This will install the requirements for the server.
+3. In the folder PythonServer you will want to run MasterWebsocket.py
+4. They may be dependencies you don't have so download them with pip3 install and keep trying until you have all of them.
 
 Once both pieces are running you can use the application.
 
