@@ -135,7 +135,7 @@ async def handleMask(websocket):
     #        await websocket.send("finished!")
     
 
-start_server = websockets.serve(handleImageMaskNStyle, '10.0.0.33', 8765)
+start_server = websockets.serve(handleImageMaskNStyle, 'localhost', 8765)
 print("START SERVER")
 asyncio.get_event_loop().run_until_complete(start_server)
 asyncio.get_event_loop().run_forever()
