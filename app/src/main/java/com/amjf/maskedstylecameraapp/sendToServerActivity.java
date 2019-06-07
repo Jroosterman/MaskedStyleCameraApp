@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.support.v4.app.DialogFragment;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -34,6 +33,9 @@ import java.util.List;
 
 /**
  * Activity that handles the heart of the application and sends messages to and from the web server.
+ * We will take the photo from the last activity, send it to the server for MaskRCNN.  Get the
+ * results back and use them to pick our mask.  We will pick our style and send it to the server
+ * then we will return the results.
  */
 public class sendToServerActivity extends AppCompatActivity {
 
@@ -53,14 +55,14 @@ public class sendToServerActivity extends AppCompatActivity {
     private Button chooseStyle;
 
     // These are to hardcoded to quickly get this working.  Not Planned for production.
-    String address = "ws://10.0.0.33:8765";
-
+    String address = "ws://10.0.2.2:8765";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_to_server);
 
+        //Get all of the UI Elements we modify in the activity.
         spinner = (ProgressBar) findViewById(R.id.progress_loader);
         sendAgain = (Button) findViewById(R.id.Retry);
         sendAgain.setEnabled(false);
@@ -76,6 +78,7 @@ public class sendToServerActivity extends AppCompatActivity {
         storedPhoto = Uri.parse(intent.getStringExtra("image"));
         makeConnections();
 
+        //Set up all of our listeners.
         sendAgain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -123,6 +126,7 @@ public class sendToServerActivity extends AppCompatActivity {
      * * 9. Close the connection.  Save the image.
      */
     private void makeConnections() {
+        //Connect to our websocket and wait a second for the connection to finish.
         connectWebSocket();
         try {
             Thread.sleep(1000);
@@ -130,6 +134,7 @@ public class sendToServerActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        //Read our file into a byte array.
         InputStream iStream = null;
         try {
             iStream = getContentResolver().openInputStream(storedPhoto);
@@ -142,6 +147,8 @@ public class sendToServerActivity extends AppCompatActivity {
         } catch (IOException e) {
             Log.w("EXCEPTION", e.getMessage());
         }
+
+        //Send the bytes to the server 1 meg at a time.
         try {
             socket.send("image");
             int i = 0;
@@ -168,6 +175,7 @@ public class sendToServerActivity extends AppCompatActivity {
 
     /**
      * When a failure occurs, we alert the user with a message.
+     * This is used to pop up a given message.
      *
      * @param message
      */
@@ -179,7 +187,6 @@ public class sendToServerActivity extends AppCompatActivity {
 
         AlertDialog dialog = builder.create();
         dialog.show();
-
     }
 
     /**
@@ -207,18 +214,20 @@ public class sendToServerActivity extends AppCompatActivity {
                             }
                         })
                 // Set the action buttons
-                .setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
+                .setPositiveButton(R.string.mask, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the selectedItems results somewhere
                         // or return them to the component that opened the dialog
-                        sendMasks();
+                        sendMasks("nomask");
                     }
                 })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.nomask, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
+                        sendMasks("mask");
                     }
+
                 });
 
         AlertDialog dialog = builder.create();
@@ -244,6 +253,7 @@ public class sendToServerActivity extends AppCompatActivity {
         Button chooseWave = (Button) dialog.findViewById(R.id.chooseWave);
         Button choosePC = (Button) dialog.findViewById(R.id.choosePc);
 
+        // We need to handle our various styles we want to use and get an action when we select one.
         chooseMuse.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -291,13 +301,11 @@ public class sendToServerActivity extends AppCompatActivity {
         socket.send(message);
     }
 
-
-
     /**
      * Handle the action where we send masks and on success we Activate the next button.
      */
-    private void sendMasks() {
-        String message = "chosen_masks";
+    private void sendMasks(String m) {
+        String message = m;
         for (Integer i : chosenMasks) {
             message += "," + masks[i];
         }
@@ -317,22 +325,29 @@ public class sendToServerActivity extends AppCompatActivity {
             return;
         }
 
+        // This handles what our wb socket will do.
         socket = new WebSocketClient(uri) {
             @Override
             public void onOpen(ServerHandshake serverHandshake) {
                 Log.i("Websocket", "Opened");
             }
 
+            // When we receive a message detect what type it is.
             @Override
             public void onMessage(String s) {
                 final String message = s;
+                // If it is a mask message get ready to read an image.
                 if (message.equals("mask")) {
                     inImage = true;
                     dataStream = new ByteArrayOutputStream();
-                } else if (message.equals("styleStart")) {
+                }
+                // If it is a style start message.  Get ready to receive an image.
+                else if (message.equals("styleStart")) {
                     inImage = true;
                     dataStream = new ByteArrayOutputStream();
-                } else if ("endMaskList".equals(message)) {
+                }
+                // We have finished receiveing the mask list.  Process the data.
+                else if ("endMaskList".equals(message)) {
                     byte[] img = dataStream.toByteArray();
                     final Bitmap decodedByte = BitmapFactory.decodeByteArray(img, 0, img.length);
 
@@ -348,7 +363,9 @@ public class sendToServerActivity extends AppCompatActivity {
                     inImage = false;
 
                     // process image
-                } else if ("endStyle".equals(message)) {
+                }
+                // We have finished receiving the final product.  Parse it and display it.
+                else if ("endStyle".equals(message)) {
                     byte[] img = dataStream.toByteArray();
                     final Bitmap decodedByte = BitmapFactory.decodeByteArray(img, 0, img.length);
 
@@ -360,11 +377,15 @@ public class sendToServerActivity extends AppCompatActivity {
                         }
                     });
                     inImage = false;
-                } else if (message.contains("mask_list")) {
+                }
+                // We have masks to process.
+                else if (message.contains("mask_list")) {
                     String[] msks = message.split(",");
                     msks = Arrays.copyOfRange(msks, 1, msks.length);
                     masks = msks;
-                } else if (message.equals("mask_received")) {
+                }
+                // Our choices have been received.
+                else if (message.equals("mask_received")) {
                     // Update the UI when we know the masks have been received.
                     runOnUiThread(new Runnable() {
                         @Override
@@ -376,6 +397,7 @@ public class sendToServerActivity extends AppCompatActivity {
                 }
             }
 
+            // Read images as bytes.
             @Override
             public void onMessage(ByteBuffer buffer) {
                 if (inImage == true) {

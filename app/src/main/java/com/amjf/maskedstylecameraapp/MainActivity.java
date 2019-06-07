@@ -21,6 +21,8 @@ import java.util.Date;
 
 /**
  * Main Activity for the class. Handles most of the main photo taking activities.
+ * This activity is the entry point into our application.  It takes a photo and prepares the next
+ * activity.
  */
 public class MainActivity extends AppCompatActivity {
     //Button on the activity_mail.xml
@@ -38,8 +40,9 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * When you create the activity, set up these values. Minor change.
+     * We set up various UI elements and on click handlers.
      *
-     * @param savedInstanceState instance of the current state of the applicaiton.
+     * @param savedInstanceState instance of the current state of the application.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,11 +67,11 @@ public class MainActivity extends AppCompatActivity {
                 sendTakenPictureIntent();
             }
         });
-
     }
 
     /**
      * Action happens when you finish an activity.
+     * The action we care about is the Take Photo action.
      *
      * @param requestCode Request code of the activity.
      * @param resultCode  result of the activity.
