@@ -3,11 +3,11 @@ An app that Masks sections of a Picture you take and stylizes it to your favorit
 
 This application is created by Andrew Miller and John Frankel for Drexel's Computer Vision Class.
 
-Unfortunately we were not able to get our AWS server up and running in time so to run this project you will need to Get android studio and python3 set up.
+Unfortunately we were not able to get our AWS server up and running in time so to run this project you will need to Get Android Studio and python3 set up.
 
 Running the Android app:
 1. Download and install Android Studio
-2. Open the adroid app (use android studio to open the project in the app folder)
+2. Open the Android app (use android studio to open the project in the app folder)
 3. Hit the run button
 4. Create an Emulated device.  NOTE: if you want to run on your own phone you will need to enable developer mode and USB debugging.
 5. Run the application with the run button and it should appear on the emulated device.
