@@ -5,6 +5,11 @@ This application is created by Andrew Miller and John Frankel for Drexel's Compu
 
 Unfortunately we were not able to get our AWS server up and running in time so to run this project you will need to Get Android Studio and python3 set up.
 
+You will need to install the submodules with 
+git submodule update --init --recursive
+You will also need to move the file mask_rcnn_coco.h5 into the MaskRCNN folder so the networks has a model to use.
+Finallaly you should get the zip located https://drive.google.com/open?id=1bi-XHcXrvW4AZWusPFOx7KcIJJwEqu9d and replace the fast style transfer with it.  It contains several trained models we used that were too big to store on github.
+
 Running the Android app:
 1. Download and install Android Studio
 2. Open the Android app (use android studio to open the project in the app folder)
