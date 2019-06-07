@@ -219,13 +219,15 @@ public class sendToServerActivity extends AppCompatActivity {
                     public void onClick(DialogInterface dialog, int id) {
                         // User clicked OK, so save the selectedItems results somewhere
                         // or return them to the component that opened the dialog
-                        sendMasks();
+                        sendMasks("nomask");
                     }
                 })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                .setNegativeButton(R.string.nomask, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
+                        sendMasks("mask");
                     }
+
                 });
 
         AlertDialog dialog = builder.create();
@@ -302,8 +304,8 @@ public class sendToServerActivity extends AppCompatActivity {
     /**
      * Handle the action where we send masks and on success we Activate the next button.
      */
-    private void sendMasks() {
-        String message = "chosen_masks";
+    private void sendMasks(String m) {
+        String message = m;
         for (Integer i : chosenMasks) {
             message += "," + masks[i];
         }
