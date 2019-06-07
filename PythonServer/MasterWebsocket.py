@@ -102,6 +102,9 @@ async def handleMask(websocket):
         print(i)
         final_mask = (final_mask + mask_results['masks'][:,:,i]) > 0
 
+    if masks.split(',')[0] == "mask":
+        final_mask = 1 - final_mask
+        
     print(style)
     stylized = mask_transfer(image, 1 - final_mask, convert_filepath(style))
 
